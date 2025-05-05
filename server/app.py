@@ -6,11 +6,11 @@ import joblib
 app = Flask(__name__)
 
 # Enable CORS for specific origins
-CORS(app, origins=[
+# Apply CORS to all routes and methods with explicit origins
+CORS(app, resources={r"/*": {"origins": [
     "http://localhost:3000",
     "https://bitcoin-predict-dummy.netlify.app"
-])
-
+]}}, supports_credentials=True)
 # Load model and scalers
 model = joblib.load("best_model.pkl")
 input_scaler = joblib.load("input_scaler.pkl")
