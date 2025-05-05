@@ -1,4 +1,5 @@
-
+keras
+tensorflow
 flask
 flask-cors
 scikit-learn
