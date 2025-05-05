@@ -4,10 +4,10 @@ import joblib
 import numpy as np
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins=["http://localhost:3000/"])
 
 # Load model and scalers
-model = joblib.load("model.pkl")
+model = joblib.load("best_model.pkl")
 x_scaler = joblib.load("X_scaler.pkl")
 y_scaler = joblib.load("y_scaler.pkl")
 
