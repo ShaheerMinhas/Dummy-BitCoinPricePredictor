@@ -1,39 +1,43 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import joblib
 import numpy as np
+import joblib
 
 app = Flask(__name__)
-CORS(app, origins=["http://localhost:3000/"])
+
+# Enable CORS for specific origins
+CORS(app, origins=[
+    "http://localhost:3000",
+    "https://bitcoin-predict-dummy.netlify.app"
+])
 
 # Load model and scalers
 model = joblib.load("best_model.pkl")
-x_scaler = joblib.load("X_scaler.pkl")
-y_scaler = joblib.load("y_scaler.pkl")
+input_scaler = joblib.load("input_scaler.pkl")
+target_scaler = joblib.load("target_scaler.pkl")
 
 @app.route('/predict', methods=['POST'])
 def predict():
     try:
+        # Get JSON data
         data = request.get_json()
-
-        # Expecting keys: 'high' and 'low'
         high = float(data['high'])
         low = float(data['low'])
 
-        # Construct input as [High, Low]
-        input_features = np.array([[high, low]])
+        # Prepare and scale input
+        input_data = np.array([[high, low]])
+        input_scaled = input_scaler.transform(input_data)
 
-        # Scale and predict
-        scaled_input = x_scaler.transform(input_features)
-        scaled_prediction = model.predict(scaled_input)
+        # Predict and inverse transform
+        pred_scaled = model.predict(input_scaled)
+        pred_actual = target_scaler.inverse_transform(pred_scaled.reshape(-1, 1))
 
-        # Inverse transform the predicted value
-        prediction = y_scaler.inverse_transform(scaled_prediction.reshape(-1, 1)).flatten()[0]
-
-        return jsonify({'predicted_close': round(prediction, 2)})
+        return jsonify({
+            'predicted_close': round(float(pred_actual[0][0]), 2)
+        })
 
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(debug=True)
