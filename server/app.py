@@ -4,7 +4,7 @@ import joblib
 import numpy as np
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins=["http://localhost:3000/"])
 
 # Load model and scalers
 model = joblib.load("best_model.pkl")
